@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./css/simple-grid.min.css">
+  <link rel="stylesheet" href="./css/style.css">
+  <title>ESP8266 IO Board</title>
+</head>
+
+<body>
+  <h1 class="center dark-theme col-12">ESP8266 IO Board</h1>
+  <main class="center col-12">
+    <div class="board">
+      <div class="esp8266">ESP8266</div>
+      <div class="buttons">
+        <div id="btn1" class="button-outer" onclick="on_off('btn1')"> off
+          <div class="button-inner center"></div>
+        </div>
+        <div id="btn2" class="button-outer" onclick="on_off('btn2')"> off
+          <div class="button-inner center"></div>
+        </div>
+      </div>
+      <span id="rgb" class="led" data-jscolor="{onInput: 'setRGB(this)'}"></span>
+    </div>
+  </main>
+  <script src="./js/script.js"></script>
+  <script src="./js/jscolor.js"></script>
+</body>
+
+</html>

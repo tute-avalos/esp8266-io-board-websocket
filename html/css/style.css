@@ -1,0 +1,115 @@
+/**
+ * Copyright (C) 2024 Matías S. Ávalos (@tute_avalos)
+ * 
+ * This file is part of esp8266-io-board-websocket.
+ * 
+ * esp8266-io-board-websocket is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * esp8266-io-board-websocket is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with esp8266-io-board-websocket.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+ body {
+  /*display: flex;*/
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: darkslategrey;
+}
+
+.dark-theme {
+  color: whitesmoke !important;
+}
+.board {
+  display: inline-block;
+  position: relative;
+  height: 314px;
+  width:  349px;
+  background-color: rgb(208, 140, 33);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.esp8266 {
+  color: white;
+  font-family: monospace;
+  font-size: larger;
+  text-align: center;
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  width: 125px;
+  height: 241px;
+  background-color: #000;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.buttons {
+  position: absolute;
+  top: 62px;
+  left: 190px;
+  display: flex;
+  gap: 10px;
+}
+
+.button-outer {
+  width: 35px;
+  height: 46px;
+  color: white !important;
+  font-weight: bolder;
+  font-size: small;
+  background-color: gray;
+  border: 2px solid #000000;
+  border-radius: 5px;
+}
+
+.button-inner {
+  position: relative;
+  top: -5%;
+  width: 22px;
+  height: 22px;
+  background-color: black;
+  border-radius: 50%;
+
+}
+
+.led {
+  position: absolute;
+  top: 150px;
+  left: 238px;
+  width: 32px;
+  height: 32px;
+  background-color: gray;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.resistor {
+  position: absolute;
+  top: 200px;
+  left: 50px;
+  width: 20px;
+  height: 10px;
+  background-color: #8B4513;
+  border-radius: 2px;
+}
+
+.sensor {
+  position: absolute;
+  top: 220px;
+  left: 130px;
+  width: 15px;
+  height: 15px;
+  background-color: #C0C0C0;
+  border-radius: 50%;
+}
