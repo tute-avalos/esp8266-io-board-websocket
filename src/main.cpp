@@ -1,19 +1,20 @@
 // Copyright (C) 2024 Matías S. Ávalos (@tute_avalos)
-// 
+//
 // This file is part of esp8266-io-board-websocket.
-// 
-// esp8266-io-board-websocket is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
+//
+// esp8266-io-board-websocket is free software: you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // esp8266-io-board-websocket is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
-// along with esp8266-io-board-websocket.  If not, see <https://www.gnu.org/licenses/>.
+// along with esp8266-io-board-websocket.  If not, see
+// <https://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -59,7 +60,7 @@ AsyncWebServer server{80};
 AsyncWebSocket ws{"/ws"};
 
 /* Periféricos y uso interno: */
-LiquidCrystal_I2C *lcd = nullptr;
+LiquidCrystal_I2C *lcd{nullptr};
 const uint8_t LCD_ADDRSS[]{0x3F, 0x27}; // posibles direcciones para el LCD
 volatile bool is_lcd_connected{false};
 
