@@ -72,6 +72,9 @@ volatile bool last_btn_states[LEN(BTNS)]{};
 // Valor del RGB en formato '#RRGGBB'
 String rgb_value{};
 
+// Valor del LDR en la placa
+volatile uint16_t lrd_value = 0;
+
 // Indica si el botón está presionado desde el cliente web
 volatile bool is_webbtn_pressed[LEN(BTNS)]{};
 
@@ -92,6 +95,15 @@ int readBtnFrom(uint8_t pin) {
     }
   }
   return digitalRead(pin);
+}
+
+/**
+ * @brief Lee el valor del LDR asociado al ADC
+ *
+ * @param id
+ */
+void readLDR(uint8_t id __unused) {
+  lrd_value = analogRead(A0); //(lrd_value * 7 + analogRead(A0)) / 8;
 }
 
 /**
@@ -233,6 +245,7 @@ void getDataCommand(String &cmd, AsyncWebSocketClient *client) {
     for (size_t i{0}; i < LEN(BTNS); i++) {
       hardware_state += ",\"btn" + String(i + 1) + "\":" + last_btn_states[i];
     }
+    hardware_state += ", \"ldr\":" + String(lrd_value);
     hardware_state += '}';
     client->text(hardware_state);
   } else {
@@ -364,6 +377,8 @@ void setup() {
   // Muestra un seno en el led (SINE_LUT) para cada color del alternado
   // los colores (primero el rojo, luego verde y luego azul en ciclo)
   pTasker.add(rgbSine, "rgb", 50);
+  // Se lee el ADC cada 1 segundo aprox. (8 lecturas con promedio ponderado)
+  pTasker.add(readLDR, "ldr", 125);
 }
 
 void loop() {

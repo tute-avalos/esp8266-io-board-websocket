@@ -48,6 +48,8 @@ function onMessage(event) {
   document.getElementById("btn2").innerHTML += '<div class="button-inner center"></div>'
   //document.getElementById("rgb").style.backgroundColor = data.rgb
   document.getElementById("rgb").jscolor.setPreviewElementBg(`${data.rgb}`)
+  //document.getElementById("ldr").textContent = data.ldr
+  document.getElementById("ldr").style.backgroundColor = `rgb(${data.ldr/4},${data.ldr/4},${data.ldr/4})`
 }
 
 function getData() {
