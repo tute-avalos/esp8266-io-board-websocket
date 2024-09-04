@@ -63,6 +63,7 @@ AsyncWebSocket ws{"/ws"};
 LiquidCrystal_I2C *lcd{nullptr};
 const uint8_t LCD_ADDRSS[]{0x3F, 0x27}; // posibles direcciones para el LCD
 volatile bool is_lcd_connected{false};
+String lcdrows[2] = {"", ""};
 
 // Tareas periódicas:
 PeriodicTaskManager pTasker;
@@ -151,6 +152,9 @@ void initLCD(uint8_t id __unused) {
     lcd = new LiquidCrystal_I2C{conn_addr, 16, 2};
     lcd->init();
     lcd->backlight();
+    lcd->print(lcdrows[0]);
+    lcd->setCursor(0, 1);
+    lcd->print(lcdrows[1]);
   }
   last_addr = conn_addr;
 }
@@ -171,31 +175,17 @@ void readBtns(uint8_t id __unused) {
   for (size_t i{0}; i < LEN(BTNS); i++) {
     reads_btn[i] <<= 1;
     reads_btn[i] |= readBtnFrom(BTNS[i]);
-    if (is_lcd_connected) {
-      lcd->setCursor(0, i);
-    }
+
     if (reads_btn[i] == 0x00) {
       if (last_btn_states[i] != true) {
         if (i > 0 && last_btn_states[0]) {
           pTasker.unpause("rgb");
         }
         last_btn_states[i] = true;
-        if (is_lcd_connected) {
-          String btnmsj{"BTN"};
-          btnmsj += String(i + 1);
-          btnmsj += ": ON ";
-          lcd->print(btnmsj);
-        }
       }
     } else if (reads_btn[i] == 0xFF) {
       if (last_btn_states[i] != false) {
         last_btn_states[i] = false;
-        if (is_lcd_connected) {
-          String btnmsj{"BTN"};
-          btnmsj += String(i + 1);
-          btnmsj += ": OFF";
-          lcd->print(btnmsj);
-        }
       }
     }
   }
@@ -245,7 +235,11 @@ void getDataCommand(String &cmd, AsyncWebSocketClient *client) {
     for (size_t i{0}; i < LEN(BTNS); i++) {
       hardware_state += ",\"btn" + String(i + 1) + "\":" + last_btn_states[i];
     }
-    hardware_state += ", \"ldr\":" + String(lrd_value);
+    hardware_state += ",\"ldr\":" + String(lrd_value);
+    hardware_state +=
+        ",\"lcd_connected\":" + String((is_lcd_connected) ? "true" : "false");
+    hardware_state += ",\"lcd1row\":\"" + lcdrows[0] + "\"";
+    hardware_state += ",\"lcd2row\":\"" + lcdrows[1] + "\"";
     hardware_state += '}';
     client->text(hardware_state);
   } else {
@@ -284,6 +278,16 @@ void setRGBCommand(String &cmd, AsyncWebSocketClient *client) {
   analogWrite(RGB[2], 255 - strtol(cmd.substring(9, 11).c_str(), NULL, 16));
 }
 
+void setLCDCommand(String &cmd, AsyncWebSocketClient *client) {
+  String text = cmd.substring(4);
+  int row = text[0]-'0';
+  lcdrows[row] = text.substring(1);
+  if(is_lcd_connected) {
+    lcd->setCursor(0, row);
+    lcd->print(lcdrows[row]);
+  }
+}
+
 /**
  * @brief Atiende los eventos del websocket desde los clientes
  *
@@ -302,9 +306,9 @@ void onWebSocketEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
                       AwsEventType type, void *arg, uint8_t *data, size_t len) {
 
   // Comandos válidos y arreglo de punteros a función a cada uno de ellos
-  static const char *CMDS[]{"dat", "btn", "rgb"};
+  static const char *CMDS[]{"dat", "btn", "rgb", "lcd"};
   static void (*command[])(String &, AsyncWebSocketClient *){
-      getDataCommand, setBtnCommand, setRGBCommand};
+      getDataCommand, setBtnCommand, setRGBCommand, setLCDCommand};
   //---------------------------------------------------------------------
 
   if (type == WS_EVT_CONNECT) {
