@@ -16,7 +16,9 @@
 // along with esp8266-io-board-websocket.  If not, see
 // <https://www.gnu.org/licenses/>.
 
+#include <AHT10.h>
 #include <Arduino.h>
+#include <BH1750.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <LiquidCrystal_I2C.h>
@@ -66,6 +68,16 @@ volatile bool is_lcd_connected{false};
 // Textos en el display (fila 1 y fila 2)
 String lcdrows[2] = {"", ""};
 
+AHT10 *aht10{nullptr};
+volatile bool is_aht_connected{false};
+volatile float tmp{0};
+volatile float hum{0};
+
+BH1750 *bh1750{nullptr};
+const uint8_t BH1750ADDR = 0x23;
+volatile bool is_bh_connected{false};
+volatile float lx{0};
+
 // Tareas periódicas:
 PeriodicTaskManager pTasker;
 
@@ -106,6 +118,30 @@ int readBtnFrom(uint8_t pin) {
  */
 void readLDR(uint8_t id __unused) {
   lrd_value = analogRead(A0); //(lrd_value * 7 + analogRead(A0)) / 8;
+}
+
+void readAHT10(uint8_t id __unused) {
+  if (is_aht_connected) {
+    float t = aht10->readTemperature();
+    float h = aht10->readHumidity();
+    if (t != AHT10_ERROR) {
+      tmp = t;
+    }
+    if (h != AHT10_ERROR) {
+      hum = h;
+    }
+  }
+}
+
+void readBH1750(uint8_t id __unused) {
+  if (is_bh_connected) {
+    if (bh1750->measurementReady()) {
+      float l = bh1750->readLightLevel();
+      if (l > 0) {
+        lx = l;
+      }
+    }
+  }
 }
 
 /**
@@ -158,6 +194,62 @@ void initLCD(uint8_t id __unused) {
     lcd->print(lcdrows[1]);
   }
   last_addr = conn_addr;
+}
+
+/**
+ * @brief Inicializa el sensor de temperatura y humedad i2c
+ * 
+ * Cuando se conecta el AHT10 se inicializa y se detecta si
+ * fue desconectado, desalocando la memoria. Aparece y desaparece
+ * de la interfaz gráfica web según corresponde.
+ * 
+ * @param id no se utiliza, es el id del proceso periódico.
+ */
+void initAHT10(uint8_t id __unused) {
+  if (isI2CDevicePresent(AHT10_ADDRESS_0X38)) {
+    if (aht10 == nullptr) {
+      aht10 = new AHT10(AHT10_ADDRESS_0X38);
+      is_aht_connected = aht10->begin();
+      if (!is_aht_connected) {
+        delete aht10;
+        aht10 = nullptr;
+      }
+    }
+  } else {
+    is_aht_connected = false;
+    if (aht10 != nullptr) {
+      delete aht10;
+      aht10 = nullptr;
+    }
+  }
+}
+
+/**
+ * @brief Inicializa el sensor de luz i2c (luxómetro)
+ * 
+ * Cuando se conecta el BH1750 se inicializa y se detecta si
+ * fue desconectado, desalocando la memoria. Aparece y desaparece
+ * de la interfaz gráfica web según corresponde.
+ * 
+ * @param id no se utiliza, es el id del proceso periódico.
+ */
+void initBH1750(uint8_t id __unused) {
+  if (isI2CDevicePresent(BH1750ADDR)) {
+    if (bh1750 == nullptr) {
+      bh1750 = new BH1750(BH1750ADDR);
+      is_bh_connected = bh1750->begin(BH1750::CONTINUOUS_HIGH_RES_MODE);
+      if (!is_bh_connected) {
+        delete bh1750;
+        bh1750 = nullptr;
+      }
+    }
+  } else {
+    is_bh_connected = false;
+    if (bh1750 != nullptr) {
+      delete bh1750;
+      bh1750 = nullptr;
+    }
+  }
 }
 
 /**
@@ -239,8 +331,21 @@ void getDataCommand(String &cmd, AsyncWebSocketClient *client) {
     hardware_state += ",\"ldr\":" + String(lrd_value);
     hardware_state +=
         ",\"lcd_connected\":" + String((is_lcd_connected) ? "true" : "false");
-    hardware_state += ",\"lcd1row\":\"" + lcdrows[0] + "\"";
-    hardware_state += ",\"lcd2row\":\"" + lcdrows[1] + "\"";
+    if (is_lcd_connected) {
+      hardware_state += ",\"lcd1row\":\"" + lcdrows[0] + "\"";
+      hardware_state += ",\"lcd2row\":\"" + lcdrows[1] + "\"";
+    }
+    hardware_state +=
+        ",\"aht_connected\":" + String((is_aht_connected) ? "true" : "false");
+    if (is_aht_connected) {
+      hardware_state += ",\"tmp\":" + String(tmp);
+      hardware_state += ",\"hum\":" + String(hum);
+    }
+    hardware_state +=
+        ",\"bh_connected\":" + String((is_bh_connected) ? "true" : "false");
+    if (is_bh_connected) {
+      hardware_state += ",\"lx\":" + String(lx);
+    }
     hardware_state += '}';
     client->text(hardware_state);
   } else {
@@ -281,11 +386,11 @@ void setRGBCommand(String &cmd, AsyncWebSocketClient *client) {
 
 /**
  * @brief Escribe un texto que viene desde la página web
- * 
+ *
  * El comando es lcd=?<texto> donde '?' es 0 ó 1 (fila 1 ó 2)
  * y <texto> es lo que se escribe en el display. Deben ser
  * 16 chars codificados en ASCII estándar.
- * 
+ *
  * @param cmd el comando completo recibido por el cliente
  * @param client el cliente que envió el mensaje
  */
@@ -373,7 +478,10 @@ void setup() {
   Wire.begin();
   // Para verificar dónde está el LCD (0x3F//0x27) e inicializarlo
   initLCD(0);
-
+  // Se inicializa el aht10 (temperatura y humedad)
+  initAHT10(0);
+  // Se inicializa el bh1750 (luxómetro)
+  initBH1750(0);
   // Inicialización del WiFi, WebSocket y Servidor Web
   WiFi.softAP(SSID, PSWD);
   ws.onEvent(onWebSocketEvent);
@@ -383,8 +491,10 @@ void setup() {
   server.begin();
 
   /* Tareas a ejecutar periódicamente */
-  // cada 1 segundo chequea si está el display conectado
+  // cada 1 segundo chequea si están los dispositivos en el I2C
   pTasker.add(initLCD, "lcd-init", 1000);
+  pTasker.add(initAHT10, "aht-init", 1000);
+  pTasker.add(initBH1750, "bh-init", 1000);
   // lectura de los botones cada 4ms.
   // 8 lecturas seguidas de un mismo estado da por sentado el estado
   // en la variable last_btn_states (state)
@@ -392,8 +502,12 @@ void setup() {
   // Muestra un seno en el led (SINE_LUT) para cada color del alternado
   // los colores (primero el rojo, luego verde y luego azul en ciclo)
   pTasker.add(rgbSine, "rgb", 50);
-  // Se lee el ADC cada 1 segundo aprox. (8 lecturas con promedio ponderado)
+  // Se lee el ADC cada 125 ms
   pTasker.add(readLDR, "ldr", 125);
+  // Se lee temperatura y humedad cada 1 minuto
+  pTasker.add(readAHT10, "aht", 500);
+  // Se lee el luxometro cada 200 ms
+  pTasker.add(readBH1750, "bh", 200);
 }
 
 void loop() {

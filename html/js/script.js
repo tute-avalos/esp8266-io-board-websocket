@@ -50,12 +50,12 @@ function writeTextToLCD(row1, row2) {
   });
 }
 
-function setLCDVisibility(on_off) {
-  const lcd = document.querySelector('.lcd');
+function setVisibility(element, on_off) {
+  const el = document.querySelector(element);
   if (on_off) {
-    lcd.classList.remove('hidden');
+    el.classList.remove('hidden');
   } else {
-    lcd.classList.add('hidden');
+    el.classList.add('hidden');
   }
 }
 
@@ -69,9 +69,18 @@ function onMessage(event) {
   document.getElementById("rgb").jscolor.setPreviewElementBg(`${data.rgb}`)
   //document.getElementById("ldr").textContent = data.ldr
   document.getElementById("ldr").style.backgroundColor = `rgb(${data.ldr / 4},${data.ldr / 4},${data.ldr / 4})`
-  setLCDVisibility(data.lcd_connected);
+  setVisibility('.lcd', data.lcd_connected);
   if (data.lcd_connected) {
     writeTextToLCD(data.lcd1row, data.lcd2row);
+  }
+  setVisibility('.aht10', data.aht_connected);
+  if(data.aht_connected) {
+    document.getElementById('tmp').textContent = `T: ${data.tmp}°C`;
+    document.getElementById('hum').textContent = `H: ${data.hum}%`;
+  }
+  setVisibility('.bh1750', data.bh_connected);
+  if(data.bh_connected) {
+    document.getElementById('lx').textContent = `${data.lx} lx`;
   }
 }
 
