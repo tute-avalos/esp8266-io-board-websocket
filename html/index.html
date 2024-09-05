@@ -11,20 +11,84 @@
 
 <body>
   <h1 class="center dark-theme col-12">ESP8266 IO Board</h1>
+  <header id="custom-prompt" class="hidden">
+    <section class="prompt-content">
+      <label for="input1">Fila 1:</label>
+      <input type="text" id="input1">
+
+      <label for="input2">Fila 2:</label>
+      <input type="text" id="input2">
+
+      <button id="submit-prompt">Aceptar</button>
+      <button id="cancel-prompt">Cancelar</button>
+    </section>
+  </header>
   <main class="center col-12">
-    <div class="board">
-      <div class="esp8266">ESP8266</div>
-      <div class="ldr" id="ldr"></div>
-      <div class="buttons">
-        <div id="btn1" class="button-outer" onclick="on_off('btn1')"> off
-          <div class="button-inner center"></div>
-        </div>
-        <div id="btn2" class="button-outer" onclick="on_off('btn2')"> off
-          <div class="button-inner center"></div>
-        </div>
-      </div>
+    <section class="board">
+      <section class="esp8266">
+        <h3>ESP8266</h3>
+      </section>
+      <section class="ldr" id="ldr"></section>
+      <section class="buttons">
+        <article id="btn1" class="button-outer" onclick="on_off('btn1')"> off
+          <article class="button-inner center"></article>
+        </article>
+        <article id="btn2" class="button-outer" onclick="on_off('btn2')"> off
+          <article class="button-inner center"></article>
+        </article>
+      </section>
+      <section class="i2c">I²C</section>
       <span id="rgb" class="led" data-jscolor="{onInput: 'setRGB(this)'}"></span>
-    </div>
+    </section>
+    <br>
+    <section class="lcd" onclick="showPrompt()">
+      <section class="row">
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+      </section>
+      <div class="row">
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+        <span class="char"></span>
+      </div>
+    </section>
+    <br>
+    <section class="sensor bh1750">
+      <h3>BH1750</h3>
+      <p id="lx">XXXX lx</p>
+    </section>
+    <section class="sensor aht10">
+      <h3>AHT10</h3>
+      <p id="tmp">T: 20°C</p>
+      <p id="hum">H: 55%</p>
+    </section>
   </main>
   <script src="./js/script.js"></script>
   <script src="./js/jscolor.js"></script>
