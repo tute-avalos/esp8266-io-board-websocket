@@ -63,6 +63,7 @@ AsyncWebSocket ws{"/ws"};
 LiquidCrystal_I2C *lcd{nullptr};
 const uint8_t LCD_ADDRSS[]{0x3F, 0x27}; // posibles direcciones para el LCD
 volatile bool is_lcd_connected{false};
+// Textos en el display (fila 1 y fila 2)
 String lcdrows[2] = {"", ""};
 
 // Tareas periódicas:
@@ -272,17 +273,27 @@ void setRGBCommand(String &cmd, AsyncWebSocketClient *client) {
   pTasker.pause("rgb");
   // En cmd debería haber un 'rgb=#RRGGBB' donde RR,GG,BB son los valores
   // en hexadecimal del color.
-  rgb_value = cmd.substring(5, 11); // Se extrae el valor RRGGBB en hexa
+  rgb_value = cmd.substring(4, 11); // Se extrae el valor RRGGBB en hexa
   analogWrite(RGB[0], 255 - strtol(cmd.substring(5, 7).c_str(), NULL, 16));
   analogWrite(RGB[1], 255 - strtol(cmd.substring(7, 9).c_str(), NULL, 16));
   analogWrite(RGB[2], 255 - strtol(cmd.substring(9, 11).c_str(), NULL, 16));
 }
 
+/**
+ * @brief Escribe un texto que viene desde la página web
+ * 
+ * El comando es lcd=?<texto> donde '?' es 0 ó 1 (fila 1 ó 2)
+ * y <texto> es lo que se escribe en el display. Deben ser
+ * 16 chars codificados en ASCII estándar.
+ * 
+ * @param cmd el comando completo recibido por el cliente
+ * @param client el cliente que envió el mensaje
+ */
 void setLCDCommand(String &cmd, AsyncWebSocketClient *client) {
   String text = cmd.substring(4);
-  int row = text[0]-'0';
+  int row = text[0] - '0';
   lcdrows[row] = text.substring(1);
-  if(is_lcd_connected) {
+  if (is_lcd_connected) {
     lcd->setCursor(0, row);
     lcd->print(lcdrows[row]);
   }
