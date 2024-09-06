@@ -66,7 +66,7 @@ LiquidCrystal_I2C *lcd{nullptr};
 const uint8_t LCD_ADDRSS[]{0x3F, 0x27}; // posibles direcciones para el LCD
 volatile bool is_lcd_connected{false};
 // Textos en el display (fila 1 y fila 2)
-String lcdrows[2] = {"", ""};
+String lcdrows[2]{"", ""};
 
 AHT10 *aht10{nullptr};
 volatile bool is_aht_connected{false};
@@ -74,7 +74,7 @@ volatile float tmp{0};
 volatile float hum{0};
 
 BH1750 *bh1750{nullptr};
-const uint8_t BH1750ADDR = 0x23;
+const uint8_t BH1750ADDR{0x23};
 volatile bool is_bh_connected{false};
 volatile float lx{0};
 
@@ -114,12 +114,15 @@ int readBtnFrom(uint8_t pin) {
 /**
  * @brief Lee el valor del LDR asociado al ADC
  *
- * @param id
+ * @param id designado por el PeriodicTaskManager
  */
-void readLDR(uint8_t id __unused) {
-  lrd_value = analogRead(A0); //(lrd_value * 7 + analogRead(A0)) / 8;
-}
+void readLDR(uint8_t id __unused) { lrd_value = analogRead(A0); }
 
+/**
+ * @brief Lectura de temperatura y humedad
+ *
+ * @param id designado por el PeriodicTaskManager
+ */
 void readAHT10(uint8_t id __unused) {
   if (is_aht_connected) {
     float t = aht10->readTemperature();
@@ -133,6 +136,11 @@ void readAHT10(uint8_t id __unused) {
   }
 }
 
+/**
+ * @brief Lectura del luxómetro
+ *
+ * @param id designado por el PeriodicTaskManager
+ */
 void readBH1750(uint8_t id __unused) {
   if (is_bh_connected) {
     if (bh1750->measurementReady()) {
@@ -189,6 +197,7 @@ void initLCD(uint8_t id __unused) {
     lcd = new LiquidCrystal_I2C{conn_addr, 16, 2};
     lcd->init();
     lcd->backlight();
+    // Se escribe el último texto enviado:
     lcd->print(lcdrows[0]);
     lcd->setCursor(0, 1);
     lcd->print(lcdrows[1]);
@@ -198,11 +207,11 @@ void initLCD(uint8_t id __unused) {
 
 /**
  * @brief Inicializa el sensor de temperatura y humedad i2c
- * 
+ *
  * Cuando se conecta el AHT10 se inicializa y se detecta si
  * fue desconectado, desalocando la memoria. Aparece y desaparece
  * de la interfaz gráfica web según corresponde.
- * 
+ *
  * @param id no se utiliza, es el id del proceso periódico.
  */
 void initAHT10(uint8_t id __unused) {
@@ -212,25 +221,25 @@ void initAHT10(uint8_t id __unused) {
       is_aht_connected = aht10->begin();
       if (!is_aht_connected) {
         delete aht10;
-        aht10 = nullptr;
+        aht10 = nullptr; // Se vuelve a nullptr sino queda el valor anterior
       }
     }
   } else {
     is_aht_connected = false;
     if (aht10 != nullptr) {
       delete aht10;
-      aht10 = nullptr;
+      aht10 = nullptr; // Se vuelve a nullptr sino queda el valor anterior
     }
   }
 }
 
 /**
  * @brief Inicializa el sensor de luz i2c (luxómetro)
- * 
+ *
  * Cuando se conecta el BH1750 se inicializa y se detecta si
  * fue desconectado, desalocando la memoria. Aparece y desaparece
  * de la interfaz gráfica web según corresponde.
- * 
+ *
  * @param id no se utiliza, es el id del proceso periódico.
  */
 void initBH1750(uint8_t id __unused) {
@@ -240,14 +249,14 @@ void initBH1750(uint8_t id __unused) {
       is_bh_connected = bh1750->begin(BH1750::CONTINUOUS_HIGH_RES_MODE);
       if (!is_bh_connected) {
         delete bh1750;
-        bh1750 = nullptr;
+        bh1750 = nullptr; // Se vuelve a nullptr sino queda el valor anterior
       }
     }
   } else {
     is_bh_connected = false;
     if (bh1750 != nullptr) {
       delete bh1750;
-      bh1750 = nullptr;
+      bh1750 = nullptr; // Se vuelve a nullptr sino queda el valor anterior
     }
   }
 }
@@ -504,9 +513,9 @@ void setup() {
   pTasker.add(rgbSine, "rgb", 50);
   // Se lee el ADC cada 125 ms
   pTasker.add(readLDR, "ldr", 125);
-  // Se lee temperatura y humedad cada 1 minuto
+  // Se lee temperatura y humedad cada 500 ms
   pTasker.add(readAHT10, "aht", 500);
-  // Se lee el luxometro cada 200 ms
+  // Se lee el luxómetro cada 200 ms (una lectura en alta resolución tarda ~120ms)
   pTasker.add(readBH1750, "bh", 200);
 }
 
