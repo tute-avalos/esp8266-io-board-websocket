@@ -56,3 +56,7 @@ Una vez grabado el firmware y la imagen del filesystem, podrá acceder al WiFi e
 <p style="text-align: center;"><img src="./doc/Captura%20de%20pantalla_2024-09-06_16-02-34.png" alt="Páginas web servida desde el ESP8266 que muestra un dibujo de la ESP8266 IO Board" width="75%"></p>
 
 A través del `WebSocket` se irá refrescando cada 50ms la información del estado de la placa, y a su vez, cada vez que interactúe con la misma, se verán los cambios en el hardware. Es decir, que si toca el botón en la interfaz web, esto se verá reflejado en el soporte físico. Al igual que si se presiona el botón físico, se verá reflejado en la interfaz web.
+
+El conexionado que logra la imagen anteriormente expuesta es el siguiente:
+
+<p style="text-align: center;"><img src="./doc/conexiones.png" alt="Páginas web servida desde el ESP8266 que muestra un dibujo de la ESP8266 IO Board" width="75%"></p>
