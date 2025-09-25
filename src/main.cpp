@@ -38,7 +38,7 @@ const int RGB[]{D7, D6, D5}; // R=D7, G=D6, B=D5
 const int BTNS[]{D3, D4};    // BTN1=D3, BTN2=D4
 
 // Semi-ciclo de un SENO con 128 posiciones
-const uint8_t SINE_LUT[] = {
+const uint8_t SINE_LUT[]{
     0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x02, //
     0x02, 0x03, 0x04, 0x05, 0x05, 0x06, 0x07, 0x09, //
     0x0A, 0x0B, 0x0C, 0x0E, 0x0F, 0x11, 0x12, 0x14, //
@@ -88,7 +88,7 @@ volatile bool is_bh_connected{false};
 volatile float lx{0};
 
 // Tareas periódicas:
-PeriodicTaskManager pTasker;
+PeriodicTaskManager pTasker{};
 
 // Último estado del botón registrado (presionado/no-presionado)[ON/OFF]
 volatile bool last_btn_states[LEN(BTNS)]{};
@@ -96,7 +96,7 @@ volatile bool last_btn_states[LEN(BTNS)]{};
 String rgb_value{};
 
 // Valor del LDR en la placa
-volatile uint16_t lrd_value = 0;
+volatile uint16_t lrd_value{0};
 
 // Indica si el botón está presionado desde el cliente web
 volatile bool is_webbtn_pressed[LEN(BTNS)]{};
@@ -413,8 +413,8 @@ void setRGBCommand(String &cmd, AsyncWebSocketClient *client) {
  * @param client el cliente que envió el mensaje
  */
 void setLCDCommand(String &cmd, AsyncWebSocketClient *client) {
-  String text = cmd.substring(4);
-  int row = text[0] - '0';
+  String text{cmd.substring(4)};
+  int row{text[0] - '0'};
   lcdrows[row] = text.substring(1);
   if (is_lcd_connected) {
     lcd->setCursor(0, row);
@@ -491,6 +491,7 @@ void setup() {
     ESP.reset();
   }
   Serial.println("Sistema de archivos montado con éxito.");
+  // Adapta el PWM a los valores de la LUT
   analogWriteRange(255);
   // Se inicializa el I2C
   Wire.begin();
